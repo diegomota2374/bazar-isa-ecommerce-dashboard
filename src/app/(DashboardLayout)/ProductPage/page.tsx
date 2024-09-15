@@ -3,7 +3,14 @@
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import ProductList from "@/components/ProductList/ProductList";
-import { Box, Fab, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Fab,
+  Snackbar,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -20,6 +27,7 @@ const ProductPage = () => {
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -74,6 +82,13 @@ const ProductPage = () => {
     );
   }
 
+  // Função onSuccess para lidar com o sucesso da criação do produto
+  const onSuccess = () => {
+    fetchProducts();
+    setSuccessMessage("Produto criado com sucesso!");
+    setShowForm(false);
+  };
+
   return (
     <PageContainer
       title="Lista de Produtos"
@@ -81,9 +96,30 @@ const ProductPage = () => {
     >
       <DashboardCard>
         {showForm ? (
-          <ProductForm onCancel={() => setShowForm(false)} />
+          <ProductForm
+            onCancel={() => setShowForm(false)}
+            onSuccess={onSuccess}
+          />
         ) : (
           <>
+            {/* Exibe mensagem de sucesso se o produto for criado */}
+            {successMessage && (
+              <Snackbar
+                open={!!successMessage}
+                autoHideDuration={3000}
+                onClose={() => setSuccessMessage(null)}
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              >
+                <Alert
+                  onClose={() => setSuccessMessage(null)}
+                  severity="success"
+                  sx={{ width: "100%" }}
+                >
+                  {successMessage}
+                </Alert>
+              </Snackbar>
+            )}
+
             <Box
               sx={{
                 display: "flex",
