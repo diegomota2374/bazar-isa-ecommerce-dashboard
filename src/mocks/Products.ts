@@ -1,5 +1,6 @@
 export const bazaarCategory = [
   "Camisetas e Blusas",
+  "Conjuntos",
   "Calças e Bermudas",
   "Vestidos e Saias",
   "Casacos e Jaquetas",

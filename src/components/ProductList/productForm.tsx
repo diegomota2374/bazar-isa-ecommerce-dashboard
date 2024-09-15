@@ -48,8 +48,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
       description: "",
       price: 0,
       discount: 0,
-      status: "available",
-      state: "new",
+      status: "Disponível",
+      state: "Novo",
       imgProduct: undefined,
     },
   });
@@ -94,11 +94,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
         formData.append("imgProduct", data.imgProduct[0]);
       }
 
-      // Verifique o conteúdo do FormData no console
-      const entries = Array.from(formData.entries());
-      entries.forEach(([key, value]) => {
-        console.log(`${key}: ${value}`);
-      });
       //Envia os dados para a API
       const response = await axios.post(`${urlApi}/products`, formData, {
         headers: {
@@ -245,12 +240,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
               onChange={(event: SelectChangeEvent<string>) =>
                 field.onChange(event.target.value)
               }
-              value={field.value || "available"}
+              value={field.value || "Disponível"}
               error={!!errors.status}
             >
-              <MenuItem value="available">Disponível</MenuItem>
-              <MenuItem value="reserved">Reservado</MenuItem>
-              <MenuItem value="sold">Vendido</MenuItem>
+              <MenuItem value="Disponível">Disponível</MenuItem>
+              <MenuItem value="Reservado">Reservado</MenuItem>
+              <MenuItem value="Vendido">Vendido</MenuItem>
             </Select>
           )}
         />
@@ -272,13 +267,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
               onChange={(event: SelectChangeEvent<string>) =>
                 field.onChange(event.target.value)
               }
-              value={field.value || "new"}
+              value={field.value || "Novo"}
               error={!!errors.status}
             >
-              <MenuItem value="new">Novo</MenuItem>
-              <MenuItem value="semi-new">Semi Novo</MenuItem>
-              <MenuItem value="little-used">Pouco Usado</MenuItem>
-              <MenuItem value="with-malfunction">Com Avaria</MenuItem>
+              <MenuItem value="Novo">Novo</MenuItem>
+              <MenuItem value="Semi Novo">Semi Novo</MenuItem>
+              <MenuItem value="Pouco Usado">Pouco Usado</MenuItem>
+              <MenuItem value="Com Avaria">Com Avaria</MenuItem>
             </Select>
           )}
         />

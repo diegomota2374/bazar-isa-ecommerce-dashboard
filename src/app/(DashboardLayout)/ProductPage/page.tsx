@@ -18,11 +18,23 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import ProductForm from "@/components/ProductList/productForm";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  discount: number;
+  status: string;
+  state: string;
+  imgProduct: FileList;
+}
+
 const ProductPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -89,70 +101,91 @@ const ProductPage = () => {
     setShowForm(false);
   };
 
+  const handleEdit = (id: string) => {
+    console.log("Editar produto com id:", id);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await axios.delete(`${urlApi}/products/${id}`);
+
+      setRows((prevProducts) => prevProducts.filter((row) => row.id !== id));
+
+      fetchProducts();
+      setSuccessMessage("Produto excluido com sucesso!");
+    } catch (error) {
+      alert("Erro ao excluir o produto. Por favor, tente novamente.");
+    }
+  };
+
   return (
     <PageContainer
       title="Lista de Produtos"
       description="Esta página manipula os produtos"
     >
-      <DashboardCard>
-        {showForm ? (
+      {showForm ? (
+        <DashboardCard>
           <ProductForm
             onCancel={() => setShowForm(false)}
             onSuccess={onSuccess}
           />
-        ) : (
-          <>
-            {/* Exibe mensagem de sucesso se o produto for criado */}
-            {successMessage && (
-              <Snackbar
-                open={!!successMessage}
-                autoHideDuration={3000}
+        </DashboardCard>
+      ) : (
+        <>
+          {/* Exibe mensagem de sucesso se o produto for criado */}
+          {successMessage && (
+            <Snackbar
+              open={!!successMessage}
+              autoHideDuration={3000}
+              onClose={() => setSuccessMessage(null)}
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+              <Alert
                 onClose={() => setSuccessMessage(null)}
-                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                severity="success"
+                sx={{ width: "100%" }}
               >
-                <Alert
-                  onClose={() => setSuccessMessage(null)}
-                  severity="success"
-                  sx={{ width: "100%" }}
-                >
-                  {successMessage}
-                </Alert>
-              </Snackbar>
-            )}
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                paddingY: "16px",
-              }}
-            >
-              <TextField
-                label="Buscar"
-                variant="outlined"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="Buscar por nome, preço, status..."
-                size="small"
-                sx={{ width: isMobile ? "100%" : "300px" }}
-              />
-            </Box>
-            <ProductList rows={filteredRows} />
-            <Fab
-              color="primary"
-              aria-label="add"
-              sx={{
-                position: "fixed",
-                bottom: 16,
-                right: 16,
-              }}
-              onClick={() => setShowForm(true)}
-            >
-              <AddIcon />
-            </Fab>
-          </>
-        )}
-      </DashboardCard>
+                {successMessage}
+              </Alert>
+            </Snackbar>
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              paddingY: "16px",
+            }}
+          >
+            <TextField
+              label="Buscar"
+              variant="outlined"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Buscar por nome, preço, status..."
+              size="small"
+              sx={{ width: isMobile ? "100%" : "300px" }}
+            />
+          </Box>
+          <ProductList
+            rows={filteredRows}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+          ;
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{
+              position: "fixed",
+              bottom: 16,
+              right: 16,
+            }}
+            onClick={() => setShowForm(true)}
+          >
+            <AddIcon />
+          </Fab>
+        </>
+      )}
     </PageContainer>
   );
 };
