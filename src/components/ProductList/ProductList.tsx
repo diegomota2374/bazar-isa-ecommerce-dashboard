@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -19,6 +19,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
+import { useState } from "react";
 
 interface ProductListProps {
   rows: Array<{
@@ -34,6 +35,7 @@ interface ProductListProps {
   }>;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onDeleteSelected: (ids: string[]) => void;
 }
 
 //Define styles for the status
@@ -56,16 +58,25 @@ const ProductList: React.FC<ProductListProps> = ({
   rows,
   onDelete,
   onEdit,
+  onDeleteSelected,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [open, setOpen] = React.useState(false); // Estado para abrir o modal
-  const [selectedId, setSelectedId] = React.useState<string | null>(null); // Produto selecionado para exclusão
+  const [open, setOpen] = useState(false); // Estado para abrir o modal
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isMultipleDelete, setIsMultipleDelete] = useState(false);
 
   // Função para abrir o modal de confirmação
   const handleOpen = (id: string) => {
     setSelectedId(id);
+    setIsMultipleDelete(false);
+    setOpen(true);
+  };
+
+  const handleOpenMultipleDelete = () => {
+    setIsMultipleDelete(true);
     setOpen(true);
   };
 
@@ -80,6 +91,13 @@ const ProductList: React.FC<ProductListProps> = ({
     if (selectedId) {
       onDelete(selectedId);
     }
+    handleClose();
+  };
+
+  //Função para excluir os produtos selecionados
+  const handleConfirmDeleteSelected = () => {
+    onDeleteSelected(selectedIds);
+    setSelectedIds([]);
     handleClose();
   };
 
@@ -223,6 +241,19 @@ const ProductList: React.FC<ProductListProps> = ({
         boxSizing: "border-box",
       }}
     >
+      {/* Botão de excluir selecionados */}
+      {selectedIds.length > 0 && (
+        <Box sx={{ paddingTop: 2, paddingRight: 2, textAlign: "right" }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleOpenMultipleDelete}
+          >
+            Excluir Selecionados
+          </Button>
+        </Box>
+      )}
+
       <DataGrid
         rows={rows}
         columns={columns}
@@ -230,6 +261,7 @@ const ProductList: React.FC<ProductListProps> = ({
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
+        onRowSelectionModelChange={(ids) => setSelectedIds(ids as string[])}
         style={{ border: 0, flexGrow: 1 }}
         autoHeight
       />
@@ -243,14 +275,24 @@ const ProductList: React.FC<ProductListProps> = ({
         <DialogTitle id="confirm-dialog-title">Confirmação</DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-dialog-description">
-            Tem certeza que deseja excluir este produto?
+            {isMultipleDelete
+              ? "Tem certeza que deseja excluir os produtos selecionados?"
+              : "Tem certeza que deseja excluir este produto?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
             Cancelar
           </Button>
-          <Button onClick={handleConfirmDelete} color="secondary" autoFocus>
+          <Button
+            onClick={
+              isMultipleDelete
+                ? handleConfirmDeleteSelected
+                : handleConfirmDelete
+            }
+            color="secondary"
+            autoFocus
+          >
             Excluir
           </Button>
         </DialogActions>

@@ -87,6 +87,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     try {
       const formData = new FormData();
 
+      const token = localStorage.getItem("token");
+
       //Adiciona os dados do produto ao FormData
       formData.append("name", data.name);
       formData.append("description", data.description);
@@ -105,6 +107,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         await axios.put(`${urlApi}/products/${editingProduct._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         });
         console.log("editado com sucesso");
@@ -113,6 +116,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         await axios.post(`${urlApi}/products`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         });
       }

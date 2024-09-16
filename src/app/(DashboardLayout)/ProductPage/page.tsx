@@ -40,14 +40,23 @@ const ProductPage = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+  const token = localStorage.getItem("token");
+
   //Função apra buscar produtos da API
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${urlApi}/products`);
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(`${urlApi}/products`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setRows(response.data);
       setLoading(false);
     } catch (err) {
@@ -118,7 +127,11 @@ const ProductPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await axios.delete(`${urlApi}/products/${id}`);
+      const response = await axios.delete(`${urlApi}/products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setRows((prevProducts) => prevProducts.filter((row) => row._id !== id));
 
@@ -126,6 +139,33 @@ const ProductPage = () => {
       setSuccessMessage("Produto excluido com sucesso!");
     } catch (error) {
       alert("Erro ao excluir o produto. Por favor, tente novamente.");
+    }
+  };
+  const handleDeleteSelected = async (selectedIds: string[]) => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      //Deleta todos os produtos selecionados
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          await axios.delete(`${urlApi}/products/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+
+      //Filtra os produtos excluidos da lista de produtos
+      const updatedRows = rows.filter(
+        (product) => !selectedIds.includes(product._id)
+      );
+
+      setRows(updatedRows);
+      setSuccessMessage("Produtos excluídos com sucesso!");
+    } catch (err) {
+      console.log("Erro ao excluir produtos selecionados:", err);
+      setErrorMessage("Erro ao excluir produtos");
     }
   };
 
@@ -152,13 +192,23 @@ const ProductPage = () => {
               onClose={() => setSuccessMessage(null)}
               anchorOrigin={{ vertical: "top", horizontal: "center" }}
             >
-              <Alert
-                onClose={() => setSuccessMessage(null)}
-                severity="success"
-                sx={{ width: "100%" }}
-              >
-                {successMessage}
-              </Alert>
+              {successMessage ? (
+                <Alert
+                  onClose={() => setSuccessMessage(null)}
+                  severity="success"
+                  sx={{ width: "100%" }}
+                >
+                  {successMessage}
+                </Alert>
+              ) : (
+                <Alert
+                  onClose={() => setErrorMessage(null)}
+                  severity="error"
+                  sx={{ width: "100%" }}
+                >
+                  {errorMessage}
+                </Alert>
+              )}
             </Snackbar>
           )}
           <Box
@@ -182,6 +232,7 @@ const ProductPage = () => {
             rows={filteredRows}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onDeleteSelected={handleDeleteSelected}
           />
 
           <Fab
