@@ -19,7 +19,7 @@ import { useTheme } from "@mui/material/styles";
 import ProductForm from "@/components/ProductList/productForm";
 
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   category: string;
@@ -40,6 +40,7 @@ const ProductPage = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -99,17 +100,27 @@ const ProductPage = () => {
     fetchProducts();
     setSuccessMessage("Produto criado com sucesso!");
     setShowForm(false);
+    setEditingProduct(null);
+  };
+
+  const handleAddNewProduct = () => {
+    setEditingProduct(null);
+    setShowForm(true);
   };
 
   const handleEdit = (id: string) => {
-    console.log("Editar produto com id:", id);
+    const productToEdit = rows.find((product) => product._id === id);
+    if (productToEdit) {
+      setEditingProduct(productToEdit);
+      setShowForm(true);
+    }
   };
 
   const handleDelete = async (id: string) => {
     try {
       const response = await axios.delete(`${urlApi}/products/${id}`);
 
-      setRows((prevProducts) => prevProducts.filter((row) => row.id !== id));
+      setRows((prevProducts) => prevProducts.filter((row) => row._id !== id));
 
       fetchProducts();
       setSuccessMessage("Produto excluido com sucesso!");
@@ -128,6 +139,7 @@ const ProductPage = () => {
           <ProductForm
             onCancel={() => setShowForm(false)}
             onSuccess={onSuccess}
+            editingProduct={editingProduct}
           />
         </DashboardCard>
       ) : (
@@ -171,7 +183,7 @@ const ProductPage = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
-          ;
+
           <Fab
             color="primary"
             aria-label="add"
@@ -180,7 +192,7 @@ const ProductPage = () => {
               bottom: 16,
               right: 16,
             }}
-            onClick={() => setShowForm(true)}
+            onClick={handleAddNewProduct}
           >
             <AddIcon />
           </Fab>

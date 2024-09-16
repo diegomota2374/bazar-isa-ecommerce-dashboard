@@ -10,20 +10,14 @@ import {
   Typography,
   SelectChangeEvent,
   CircularProgress,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useForm, Controller } from "react-hook-form";
 
-interface ProductFormProps {
-  onCancel: () => void;
-  onSuccess: () => void;
-}
-
 interface FormValues {
+  _id: string;
   name: string;
   description: string;
   category: string;
@@ -33,8 +27,17 @@ interface FormValues {
   state: string;
   imgProduct: FileList;
 }
+interface ProductFormProps {
+  onCancel: () => void;
+  onSuccess: () => void;
+  editingProduct?: FormValues | null;
+}
 
-const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
+const ProductForm: React.FC<ProductFormProps> = ({
+  onCancel,
+  onSuccess,
+  editingProduct,
+}) => {
   const {
     control,
     handleSubmit,
@@ -43,23 +46,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
-      name: "",
-      category: bazaarCategory[0] || "",
-      description: "",
-      price: 0,
-      discount: 0,
-      status: "Disponível",
-      state: "Novo",
+      name: editingProduct?.name || "",
+      category: editingProduct?.category || bazaarCategory[0],
+      description: editingProduct?.description || "",
+      price: editingProduct?.price || 0,
+      discount: editingProduct?.discount || 0,
+      status: editingProduct?.status || "Disponível",
+      state: editingProduct?.state || "Novo",
       imgProduct: undefined,
     },
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<string | null>(null);
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  useEffect(() => {
+    if (editingProduct && editingProduct.imgProduct) {
+      setImagePreview(editingProduct.imgProduct as unknown as string);
+    }
+  }, [editingProduct]);
 
   //Função para lidar com a pré-visualização da imagem
   const handleImageUpload = (files: FileList | null) => {
@@ -94,14 +101,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
         formData.append("imgProduct", data.imgProduct[0]);
       }
 
-      //Envia os dados para a API
-      const response = await axios.post(`${urlApi}/products`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setAlertType("success");
-      setAlertMessage("Produto criado com sucesso!");
+      if (editingProduct) {
+        await axios.put(`${urlApi}/products/${editingProduct._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log("editado com sucesso");
+      } else {
+        //Envia os dados para a API
+        await axios.post(`${urlApi}/products`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
 
       onSuccess();
     } catch (error) {
@@ -119,7 +133,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
         margin: "0 auto",
       }}
     >
-      <Typography variant="h5">Novo Produto</Typography>
+      <Typography variant="h5">
+        {editingProduct ? "Editar Produto" : "Novo Produto"}
+      </Typography>
       <Controller
         name="name"
         control={control}
@@ -285,9 +301,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
       <Controller
         name="imgProduct"
         control={control}
-        rules={{
-          required: "Imagem é obrigatória",
-        }}
         render={({ field }) => (
           <Box sx={{ marginTop: 2 }}>
             {!imagePreview ? (
@@ -312,11 +325,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
                     Selecionar Imagem
                   </Button>
                 </label>
-                {errors.imgProduct && (
-                  <Typography color="error">
-                    {errors.imgProduct.message}
-                  </Typography>
-                )}
               </>
             ) : (
               <Box sx={{ textAlign: "center" }}>
@@ -357,20 +365,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onCancel, onSuccess }) => {
           Cancelar
         </Button>
       </Box>
-      {/* Alerta de sucesso ou erro */}
-      <Snackbar
-        open={!!alertMessage}
-        autoHideDuration={3000}
-        onClose={() => setAlertMessage(null)}
-      >
-        <Alert
-          onClose={() => setAlertMessage(null)}
-          severity={alertType}
-          sx={{ width: "100%" }}
-        >
-          {alertMessage}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
