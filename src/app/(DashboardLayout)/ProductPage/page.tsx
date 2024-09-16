@@ -42,16 +42,14 @@ const ProductPage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const urlApi = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  const token = localStorage.getItem("token");
 
   //Função apra buscar produtos da API
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const response = await axios.get(`${urlApi}/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -127,6 +125,7 @@ const ProductPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.delete(`${urlApi}/products/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -145,6 +144,8 @@ const ProductPage = () => {
     if (selectedIds.length === 0) return;
 
     try {
+      const token = localStorage.getItem("token");
+
       //Deleta todos os produtos selecionados
       await Promise.all(
         selectedIds.map(async (id) => {

@@ -46,7 +46,7 @@ const Profile = () => {
         onClick={handleClick2}
       >
         <Avatar
-          src="/images/profile/user-1.jpg"
+          src="/images/profile/logo-baner-bazar-isa.svg"
           alt="image"
           sx={{
             width: 35,
