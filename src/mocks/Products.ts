@@ -13,3 +13,21 @@ export const bazaarCategory = [
   "Roupas de Banho",
   "Roupas de Festa",
 ];
+
+export const sizes = [
+  "P",
+  "M",
+  "G",
+  "XG",
+  "1 ano",
+  "2 anos",
+  "3 anos",
+  "4 anos",
+  "5 anos",
+  "6 anos",
+  "34",
+  "36",
+  "38",
+  "40",
+  "42",
+];

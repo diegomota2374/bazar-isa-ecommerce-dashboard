@@ -1,4 +1,4 @@
-import { bazaarCategory } from "@/mocks/Products";
+import { bazaarCategory, sizes } from "@/mocks/Products";
 import {
   Box,
   Button,
@@ -22,6 +22,7 @@ interface FormValues {
   description: string;
   category: string;
   price: number;
+  size: string;
   discount?: number;
   status: string;
   state: string;
@@ -50,6 +51,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       category: editingProduct?.category || bazaarCategory[0],
       description: editingProduct?.description || "",
       price: editingProduct?.price || 0,
+      size: editingProduct?.size || "P",
       discount: editingProduct?.discount || 0,
       status: editingProduct?.status || "Disponível",
       state: editingProduct?.state || "Novo",
@@ -88,12 +90,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const formData = new FormData();
 
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token não encontrado");
+      }
 
       //Adiciona os dados do produto ao FormData
       formData.append("name", data.name);
       formData.append("description", data.description);
       formData.append("category", data.category);
       formData.append("price", data.price.toString());
+      formData.append("size", data.size);
       formData.append("discount", data.discount?.toString() || "0");
       formData.append("status", data.status);
       formData.append("state", data.state);
@@ -192,6 +198,36 @@ const ProductForm: React.FC<ProductFormProps> = ({
               error={!!errors.status}
             >
               {bazaarCategory.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        />
+        {errors.status && (
+          <Typography color="error">{errors.status.message}</Typography>
+        )}
+      </FormControl>
+
+      {/* Size of product */}
+      <FormControl fullWidth>
+        <InputLabel>Tamanho</InputLabel>
+        <Controller
+          name="size"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              label="Tamanho"
+              size="small"
+              onChange={(event: SelectChangeEvent<string>) =>
+                field.onChange(event.target.value)
+              }
+              value={field.value || sizes[0]}
+              error={!!errors.status}
+            >
+              {sizes.map((item) => (
                 <MenuItem key={item} value={item}>
                   {item}
                 </MenuItem>

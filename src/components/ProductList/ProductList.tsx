@@ -28,6 +28,7 @@ interface ProductListProps {
     description: string;
     category: string;
     price: number;
+    size: string;
     discount?: number;
     status: string;
     state: string;
@@ -202,6 +203,7 @@ const ProductList: React.FC<ProductListProps> = ({
           renderCell: renderStatusCell,
         },
         { field: "category", headerName: "Categoria", width: 130, flex: 1 },
+        { field: "size", headerName: "Tamanho", width: 90, flex: 1 },
         { field: "state", headerName: "Estado", width: 130, flex: 1 },
         {
           field: "price",
